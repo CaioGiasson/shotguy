@@ -1,0 +1,15 @@
+﻿<Properties StartupConfiguration="{6371DDF6-C5A3-541A-9622-E9961E844ED3}|">
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="Unity.Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/KeybControls.cs">
+    <Files>
+      <File FileName="Assets/Scripts/KeybControls.cs" Line="112" Column="16" />
+      <File FileName="Assets/Scripts/firstBear.cs" Line="40" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>
