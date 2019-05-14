@@ -41,8 +41,16 @@ public class firstBear : MonoBehaviour {
 		theSprite.size.Set(2, 2);
 	}
 
-	//private void OnCollisionEnter2D(Collision2D collision) {
-	//	print("colidiu");
+	//private void OnTriggerEnter(Collider other) {
+	//	print(other.gameObject.name);
+	//}
+
+	//private void OnCollisionEnter(Collision collision) {
+	//	print(collision.gameObject.name);
+	//}
+
+	//private void OnTriggerExit2D(Collider2D collision) {
+	//	print(collision.gameObject.name);
 	//}
 
 }

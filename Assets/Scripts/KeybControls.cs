@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class KeybControls : MonoBehaviour {
 
@@ -28,6 +29,9 @@ public class KeybControls : MonoBehaviour {
 	public GameObject stickSprite;
 	public GameObject tiro;
 
+	DialogManager dialog;
+
+	bool[] diags = {false, false, false, false, false, false};
 
 	Vector3 mouse_pos, object_pos;
 	float gunAngle;
@@ -36,90 +40,152 @@ public class KeybControls : MonoBehaviour {
 	bool shotReady = true;
 	bool enragedEnemies = false;
 
-	void Start () {
+	void Start() {
 		rb = GetComponent<Rigidbody>();
-		DoType("Mamãe diz: Robson, você está de castigo!\nEnquanto não recolher as roupas do chão do quarto, não pode sair!!!");
+		dialog = FindObjectOfType<DialogManager>();
 	}
-	
+
+	private void OnTriggerEnter(Collider other) {
+		switch(other.gameObject.name){
+
+			case "FimFase":
+				SceneManager.LoadScene("Fase2");
+				break;
+
+			case "DialogoInicial":
+				if ( hasGun ) {
+					if ( got4 ) {
+						if ( !diags[5] ){
+							dialog.DoDialog(new string[] { "Robson diz: MANHÊ!!!! PEGUEI TODAS AS ROUPAS" });
+							diags[5] = true;
+							rb.velocity = Vector3.zero;
+							rb.angularVelocity = Vector3.zero;
+						}
+					} else {
+						if (!diags[0]) {
+							dialog.DoDialog(new string[] { "Robson diz: Afe, perdi o ônibus da escola!", "Agora vou ter que atravessar as colinas!", "Ainda bem que agora minha arma ativa mais rápido" });
+							diags[0] = true;
+							rb.velocity = Vector3.zero;
+							rb.angularVelocity = Vector3.zero;
+						}
+					}
+				}
+				else {
+					if ( !diags[0] ){
+						dialog.DoDialog(new string[] { "Mãe diz: ROBSON!", "Mãe diz: Você está de castigo!!!", "Mãe diz: Enquanto não recolher as roupas do chão do quarto, não pode sair!!!" } );
+						rb.velocity = Vector3.zero;
+						rb.angularVelocity = Vector3.zero;
+						diags[0] = true;
+					}
+				}
+				break;
+
+			case "AchouArma":
+				if ( !diags[1] ){
+					dialog.DoDialog(new string[] { "Robson diz: Minha arma está ali na frente!!!" });
+					diags[1] = true;
+					rb.velocity = Vector3.zero;
+					rb.angularVelocity = Vector3.zero;
+				}
+				break;
+
+			case "PegouArma":
+				if (!hasGun && !diags[2]) {
+					hasGun = true;
+					Destroy(stickSprite.gameObject);
+					dialog.DoDialog(new string[] { "Robson diz: Peguei minha arma!!!" });
+					rb.velocity = Vector3.zero;
+					rb.angularVelocity = Vector3.zero;
+					diags[2] = true;
+				}
+				break;
+
+			case "AposUltimaRoupa":
+				if ( got4 && !diags[4] ) {
+					dialog.DoDialog(new string[] { "Robson diz: Ei! Os ursinhos se voltaram contra mim!!!" });
+					rb.velocity = Vector3.zero;
+					rb.angularVelocity = Vector3.zero;
+					diags[4] = true;
+				}
+				break;
+
+			case "Roupa1":
+				Destroy(roupas[0].gameObject);
+				nRoupas = 1;
+				got1 = true;
+				break;
+
+			case "Roupa2":
+				Destroy(roupas[1].gameObject);
+				nRoupas = 2;
+				got2 = true;
+				break;
+
+			case "Roupa3":
+				Destroy(roupas[2].gameObject);
+				nRoupas = 3;
+				got3 = true;
+				break;
+
+			case "Roupa4":
+				Destroy(roupas[3].gameObject);
+				nRoupas = 4;
+				got4 = true;
+
+				if ( !diags[3] ){
+					dialog.DoDialog(new string[] { "Robson diz: Acho que peguei todas as roupas!", "Robson diz: Hora de voltar!!!" });
+					rb.velocity = Vector3.zero;
+					rb.angularVelocity = Vector3.zero;
+
+					diags[3] = true;
+					if (!enragedEnemies) {
+						enragedEnemies = true;
+						foreach (GameObject en in enemies) {
+							en.GetComponent<firstBear>().Enrage();
+						}
+					}
+				}
+				
+				break;
+
+
+
+			//case "AchouArma":
+			//	dialog.DoDialog(new string[] { "Robson diz: Minha arma está ali na frente!!!" });
+			//	break;
+
+			//case "AchouArma":
+			//dialog.DoDialog(new string[] { "Robson diz: Minha arma está ali na frente!!!" });
+			//break;
+
+			default:
+				break;
+		}
+	}
+
 	void Update () {
 
-		roupasBox.text = "Roupas: " + nRoupas;
+		if ( roupasBox != null ) roupasBox.text = "Roupas: " + nRoupas;
 
 		// MOVIMENTO DO PERSONAGEM
 		float dirX = Input.GetAxis("Horizontal");
 		float stepX = dirX * velX;
 		float curVelX = rb.velocity.x;
-		if ((dirX > 0 && curVelX < maxVelX) || (dirX < 0 && Mathf.Abs(curVelX) < maxVelX))
-			rb.AddForce(new Vector3(stepX, 0, 0));
-
-		if (dirX < 0) guySprite.transform.localScale = new Vector3(-0.15f, 0.15f, 1);
-		else if (dirX > 0) guySprite.transform.localScale = new Vector3(0.15f, 0.15f, 1);
-
-
-		// ATIVANDO OS INIMIGOS
-		if (transform.position.x > 41f && !enragedEnemies) {
-			enragedEnemies = true;
-			DoType("Robson diz: Acho que peguei todas as roupas!!!\nHora de voltar");
-			foreach( GameObject en in enemies ){
-				en.GetComponent<firstBear>().Enrage();
-			}
+		if ((dirX > 0 && curVelX < maxVelX) || (dirX < 0 && Mathf.Abs(curVelX) < maxVelX)){
+			if ( !dialog.paused )
+				rb.AddForce(new Vector3(stepX, 0, 0));
 		}
 
-		// PEGANDO A ARMA
-		if (transform.position.x>9.5f && !hasGun){
-			hasGun = true;
-			Destroy(stickSprite.gameObject);
-			DoType("Robson diz: Peguei a arma!!!");
-		} else
-
-		// TEXTOS
-		if (transform.position.x > -6 && transform.position.x < 3 && !hasGun && !enragedEnemies) {
-			DoType("");
-		} else
-		if (transform.position.x > 3 && transform.position.x < 15 && !hasGun && !enragedEnemies) {
-			DoType("Robson diz: Minha arma!!!!");
-		} else
-		if (transform.position.x > 15 && transform.position.x < 34 && hasGun && !enragedEnemies) {
-			DoType("");
-		} else
-		if (transform.position.x < 34 && enragedEnemies) {
-			DoType("Robson diz: Ei!!!\nOs ursinhos se voltaram contra mim!!!");
-		}
-
-		if ( transform.position.x < 0 && nRoupas==4 ){
-			DoType("Robson diz: MANHÊ!!!! PEGUEI TODAS AS ROUPAS!!!\n(Fim do protótipo)");
-		}
-
-		// ROUPAS
-		if ( transform.position.x > 19 && !got1){
-			Destroy(roupas[0].gameObject);
-			nRoupas = 1;
-			got1 = true;
-		}
-		if (transform.position.x > 30 && !got2) {
-			Destroy(roupas[1].gameObject);
-			nRoupas = 2;
-			got2 = true;
-		}
-		if (transform.position.x > 36 && !got3) {
-			Destroy(roupas[2].gameObject);
-			nRoupas = 3;
-			got3 = true;
-		} 
-		if (transform.position.x > 41 && !got4) {
-			Destroy(roupas[3].gameObject);
-			nRoupas = 4;
-			got4 = true;
-		}
+		if (dirX < 0) guySprite.transform.localScale = new Vector3(-0.1f, 0.1f, 1);
+		else if (dirX > 0) guySprite.transform.localScale = new Vector3(0.1f, 0.1f, 1);
 
 		// OCULTANDO A ARMA QUANDO ESTIVER SEM, E EVITANDO DE PROCESSAR A POSIÇÃO DELA
 		if (!hasGun) {
 			gunSprite.gameObject.SetActive(false);
 			return;
 		}
+
 		gunSprite.gameObject.SetActive(true);
-
-
 		mouse_pos = Input.mousePosition;
 		mouse_pos.z = 12; //The distance between the camera and object
 		object_pos = Camera.main.WorldToScreenPoint(gunSprite.transform.position);
@@ -131,12 +197,9 @@ public class KeybControls : MonoBehaviour {
 		if (Input.GetMouseButtonUp(0)) Shot();
 	}
 
-	void DoType(string text){
-		textBox.text = text;
-	}
-
 	void Shot(){
 		if (!shotReady) return;
+		if (dialog.paused) return;
 
 		// RECUO DO TIRO
 		shotReady = false;
@@ -155,9 +218,9 @@ public class KeybControls : MonoBehaviour {
 		novoTiro.transform.position = gunSprite.transform.position;
 		Rigidbody[] tiroRB = novoTiro.GetComponentsInChildren<Rigidbody>();
 		foreach(Rigidbody r in tiroRB ){
-			r.AddForce( -5 * shotDirection);
+			r.AddForce( -4 * shotDirection);
 		}
-		StartCoroutine(ClearTiro(novoTiro));
+		Destroy(novoTiro.gameObject, 2.0f);
 
 		StartCoroutine( RechargeGun() );
 	}
@@ -167,8 +230,4 @@ public class KeybControls : MonoBehaviour {
 		shotReady = true;
 	}
 
-	IEnumerator ClearTiro( GameObject t ){
-		yield return new WaitForSeconds(2.0f);
-		Destroy(t.gameObject);
-	}
 }

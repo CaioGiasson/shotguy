@@ -1,6 +1,6 @@
-WebGL
+OSXStandalone
 PlayerPath?
-/Users/caiogiasson/OneDrive - Grupo Marista/PUC/3 Período/ExpCri3/ShotGuy/Builds/V0.3
+/Users/caiogiasson/Desktop/ShotGuy.app
 SceneListBegin?
 Assets/Scenes/SampleScene.unity
 SceneListEnd?
